@@ -58,7 +58,7 @@
         .app-shell{display:flex;min-height:100vh}
 
         /* ---------- Sidebar ---------- */
-        .sidebar{width:158px;background:linear-gradient(165deg,var(--navy-800) 0%,var(--navy-900) 55%,var(--navy-950) 100%);color:#fff;position:sticky;top:0;height:100vh;border-right:1px solid rgba(255,255,255,.05);z-index:20;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg)}
+        .sidebar{width:158px;flex:0 0 158px;align-self:flex-start;background:linear-gradient(165deg,var(--navy-800) 0%,var(--navy-900) 55%,var(--navy-950) 100%);color:#fff;position:sticky;top:0;height:100vh;height:100dvh;border-right:1px solid rgba(255,255,255,.05);z-index:20;display:flex;flex-direction:column;overflow:hidden;box-shadow:var(--shadow-lg)}
         .nav-list{padding:10px 10px 16px;display:grid;gap:7px;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent}
         .nav-list::-webkit-scrollbar{width:5px}
         .nav-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:999px}
@@ -875,7 +875,16 @@
            touching routes, controllers, validation, data, or business logic.
            ====================================================================== */
         :root{--canvas:#EEF3F9;--line:#CBD7E5;--line-2:#E2E9F2}
-        html,body{max-width:100%;overflow-x:hidden}
+        /* IMPORTANT: overflow-x must NOT be `hidden` here.
+           `overflow-x:hidden` on html/body turns the body into a scroll
+           container, which silently kills `position:sticky` on the sidebar and
+           the topbar (they scroll away with the page and leave white space
+           under the sidebar). `clip` still prevents sideways scrolling but
+           keeps the document as the scrollport, so sticky works. */
+        html,body{max-width:100%;overflow-x:clip}
+        @supports not (overflow-x:clip){
+            html,body{overflow-x:hidden}
+        }
         .main{min-width:0;max-width:100%}
         .content{min-width:0}
         .content>*{max-width:100%}
