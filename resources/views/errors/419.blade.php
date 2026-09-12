@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @include('partials.favicon')
+    <meta charset="utf-8">
+    <title>419 - Session Expired</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <style>
+        body { font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif; background:#f4f5f7; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
+        .card-box { background:#fff; border-radius:14px; padding:40px; max-width:520px; width:92%; box-shadow:0 6px 24px rgba(0,0,0,.08); text-align:center; }
+        .card-box i { font-size:42px; color:#b45309; }
+        h1 { font-size:22px; margin:14px 0 6px; }
+        p { color:#444; }
+        a.btn-back { display:inline-block; margin-top:16px; padding:10px 20px; border-radius:10px; background:#1e1b4b; color:#fff; text-decoration:none; }
+    </style>
+</head>
+<body>
+    <div class="card-box">
+        <i class="bi bi-hourglass-bottom"></i>
+        <h1>Session Expired</h1>
+        <p>The page sat idle long enough for your session to close. Sign in again to continue where you left off.</p>
+        <a class="btn-back" href="{{ route('login') }}">Go to Sign In</a>
+    </div>
+</body>
+</html>
