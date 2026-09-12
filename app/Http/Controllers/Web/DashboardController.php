@@ -2,12 +2,10 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\Allocation;
 use App\Models\Issuance;
 use App\Models\Item;
 use App\Models\Requisition;
 use App\Models\RequisitionItem;
-use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -23,16 +21,32 @@ class DashboardController extends Controller
         $pending = Requisition::whereIn('status', ['pending_asset_management', 'pending_college_dean', 'pending_executive_director'])->count();
         $lowStock = $lowStockItems->count();
 
-        $allocationByDepartment = Allocation::query()
-            ->join('departments', 'allocations.department_id', '=', 'departments.id')
-            ->select(
-                'departments.name',
-                DB::raw("SUM(CASE WHEN allocations.item_type = 'CAPEX' THEN allocations.max_quantity ELSE 0 END) as capex"),
-                DB::raw("SUM(CASE WHEN allocations.item_type = 'OPEX' THEN allocations.max_quantity ELSE 0 END) as opex")
-            )
-            ->groupBy('departments.id', 'departments.name')
-            ->orderBy('departments.name')
-            ->get();
+        /*
+         | Budget utilisation, not allocation ceilings.
+         |
+         | This chart used to plot allocations.max_quantity, which is a policy
+         | number that nothing on the web submission path actually enforces --
+         | the real gate in RequisitionController@store is the department OPEX
+         | budget. Showing the ceiling next to charts of live data invited the
+         | reading that departments had already consumed those amounts.
+         |
+         | Every department is listed, including ones with no allocation row,
+         | so the dashboard no longer looks like half the campus is missing.
+         */
+        $budgetByDepartment = \App\Models\Department::orderBy('name')->get()->map(function ($department) {
+            $limit = (float) $department->opex_limit;
+            $used = $department->opexConsumed();
+
+            return [
+                'name' => $department->name,
+                'limit' => round($limit, 2),
+                'used' => round($used, 2),
+                // Never draw a negative bar: an over-budget department shows a
+                // full "used" bar and zero remaining, and the overage is
+                // readable from used vs limit in the tooltip.
+                'remaining' => round(max($limit - $used, 0), 2),
+            ];
+        })->values();
 
         $requisitionTrend = Requisition::selectRaw(\App\Support\DateSql::monthNumSelect('requested_at') . ' as month_num')
             ->selectRaw('COUNT(*) as total')
@@ -65,7 +79,7 @@ class DashboardController extends Controller
             'pending',
             'lowStock',
             'lowStockItems',
-            'allocationByDepartment',
+            'budgetByDepartment',
             'requisitionTrend',
             'categoryDistribution',
             'recentRequisitions',

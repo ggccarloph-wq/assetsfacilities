@@ -150,7 +150,6 @@ class AuthController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'confirmed', self::passwordRules()],
             'department_id' => ['nullable', 'exists:departments,id'],
-            'account_access' => ['required', 'in:student,asset'],
             'signature_file' => ['nullable', 'file', 'max:2048'],
             'signature_drawn' => ['nullable', 'string'],
         ]);
@@ -161,6 +160,12 @@ class AuthController extends Controller
         }
 
         $voucherSession = $request->session()->get(self::REGISTRATION_VOUCHER_KEY);
+
+        // The applicant no longer chooses their access level on the form. It is
+        // derived here: a verified single-use voucher in the session means an
+        // Asset Management account, anything else is a student account.
+        $validated['account_access'] = !empty($voucherSession['voucher_id']) ? 'asset' : 'student';
+
         $signatureData = null;
         if (($validated['account_access'] ?? null) === 'asset' && (($voucherSession['voucher_type'] ?? null) === 'approver')) {
             $signatureData = \App\Support\SignatureData::fromRequest($request, true);

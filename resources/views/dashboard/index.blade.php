@@ -100,8 +100,11 @@
         <div class="chart-body"><div class="chart-wrap"><canvas id="inventoryTypeChart"></canvas></div></div>
     </div>
     <div class="chart-card">
-        <div class="chart-head"><i class="bi bi-diagram-3"></i> Resource Allocation by Department</div>
-        <div class="chart-body"><div class="chart-wrap"><canvas id="allocationChart"></canvas></div></div>
+        <div class="chart-head"><i class="bi bi-diagram-3"></i> OPEX Budget Utilization by Department</div>
+        <div class="chart-body">
+            <div class="chart-note">Peso budget actually enforced on every charge slip: used against what remains.</div>
+            <div class="chart-wrap"><canvas id="budgetUtilizationChart"></canvas></div>
+        </div>
     </div>
 </div>
 
@@ -209,16 +212,42 @@ new Chart(document.getElementById('inventoryTypeChart'), {
     },
     options: chartDefaults
 });
-new Chart(document.getElementById('allocationChart'), {
+// Stacked bars: each department's bar is the full OPEX budget, split into what
+// charge slips have already committed and what is still available. Stacking
+// (instead of side-by-side bars) is what makes "almost full" readable at a
+// glance, which is the whole point of the panel.
+const budgetRows = {!! json_encode($budgetByDepartment) !!};
+new Chart(document.getElementById('budgetUtilizationChart'), {
     type: 'bar',
     data: {
-        labels: {!! json_encode($allocationByDepartment->pluck('name')) !!},
+        labels: budgetRows.map(row => row.name),
         datasets: [
-            { label: 'CAPEX', data: {!! json_encode($allocationByDepartment->pluck('capex')) !!}, backgroundColor: palette.navy, borderRadius: 6, maxBarThickness: 28 },
-            { label: 'OPEX', data: {!! json_encode($allocationByDepartment->pluck('opex')) !!}, backgroundColor: palette.cyan, borderRadius: 6, maxBarThickness: 28 }
+            { label: 'Used', data: budgetRows.map(row => row.used), backgroundColor: palette.navy, borderRadius: 6, maxBarThickness: 34 },
+            { label: 'Remaining', data: budgetRows.map(row => row.remaining), backgroundColor: palette.cyan, borderRadius: 6, maxBarThickness: 34 }
         ]
     },
-    options: chartDefaults
+    options: {
+        ...chartDefaults,
+        plugins: {
+            legend: chartDefaults.plugins.legend,
+            tooltip: {
+                callbacks: {
+                    label: function (context) {
+                        const row = budgetRows[context.dataIndex];
+                        const peso = value => '\u20B1' + Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        const share = row.limit > 0 ? Math.round((row.used / row.limit) * 100) : 0;
+                        return context.dataset.label === 'Used'
+                            ? 'Used ' + peso(row.used) + ' of ' + peso(row.limit) + ' (' + share + '%)'
+                            : 'Remaining ' + peso(row.remaining);
+                    }
+                }
+            }
+        },
+        scales: {
+            x: { stacked: true, grid: { display: false } },
+            y: { stacked: true, beginAtZero: true, grid: { color: palette.line }, title: { display: true, text: 'OPEX budget (PHP)' } }
+        }
+    }
 });
 new Chart(document.getElementById('requisitionTrendChart'), {
     type: 'line',

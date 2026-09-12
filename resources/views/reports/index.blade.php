@@ -226,7 +226,7 @@
                     <td data-label="Item">{{ $line->item->name ?? 'Deleted item' }} x{{ $line->quantity_requested }}</td>
                     <td data-label="Qty">{{ $line->quantity_requested }}</td>
                     <td data-label="Amount">₱{{ number_format($line->total_amount, 2) }}</td>
-                    <td data-label="Used For">{{ $line->requisition->charge_to_budget_item }}{{ $line->requisition->purpose ? ' — '.$line->requisition->purpose : '' }}</td>
+                    <td data-label="Used For">{{ $line->requisition->purpose ?: 'N/A' }}</td>
                     <td data-label="Status"><span class="status {{ str_contains($line->requisition->status,'approved') ? 'approved' : 'pending' }}">{{ $line->requisition->statusLabel() }}</span></td>
                 </tr>
                 @empty

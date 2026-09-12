@@ -108,6 +108,24 @@ class AdminUserController extends Controller
         } elseif (($data['approver_type'] ?? null) === 'sdao') {
             // SDAO is a school-wide office in this deployment, not a department.
             $data['department_id'] = null;
+        } elseif (\App\Support\SignatoryResolver::isCampusWide($data['approver_type'] ?? null)) {
+            /*
+             | Academic Director and Executive Director cover the whole campus
+             | and hold no department, which is exactly why forms auto-assign
+             | them instead of asking the requestor to choose. Two guards keep
+             | that assumption true: the department is cleared, and a second
+             | active holder is refused -- otherwise "the" Academic Director
+             | would be ambiguous and routing would silently pick one of them.
+             */
+            $type = $data['approver_type'];
+            $data['department_id'] = null;
+
+            if ($request->boolean('is_approved') && \App\Support\SignatoryResolver::isTaken($type, $user->id)) {
+                return back()->withErrors([
+                    'approver_type' => 'An active '.\App\Support\SignatoryResolver::label($type)
+                        .' already exists. There can only be one for the whole campus — deactivate the current one first.',
+                ]);
+            }
         }
 
         // Keep the stored account type meaningful when an Asset admin changes

@@ -35,7 +35,7 @@
     <div class="receipt-section-title">Request Details</div>
     <table class="receipt-kv">
         <tr><th>Branch</th><td>{{ $requisition->branch ?: 'NU Clark' }}</td><th>Department</th><td>{{ $requisition->department->name ?? 'N/A' }}</td></tr>
-        <tr><th>Charge To / Budget Item</th><td>{{ $requisition->charge_to_budget_item ?: 'N/A' }}</td><th>CSF No.</th><td>{{ $requisition->csf_no ?: 'N/A' }}</td></tr>
+        <tr><th>CSF No.</th><td colspan="3">{{ $requisition->csf_no ?: 'N/A' }}</td></tr>
         <tr><th>Requested By</th><td>{{ $requisition->requested_by_name ?: ($requisition->user->name ?? 'N/A') }}</td><th>Date Requested</th><td>{{ optional($requisition->requested_at)->format('m/d/Y h:i A') ?: 'N/A' }}</td></tr>
         <tr><th>Selected Dean</th><td>{{ $requisition->selectedDeanApprover->name ?? $requisition->checked_by_name ?? 'N/A' }}</td><th>Selected Executive</th><td>{{ $requisition->selectedExecutiveApprover->name ?? $requisition->approved_by_name ?? 'N/A' }}</td></tr>
         <tr><th>Purpose</th><td colspan="3">{{ $requisition->purpose ?: 'N/A' }}</td></tr>

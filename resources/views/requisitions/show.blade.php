@@ -33,7 +33,6 @@
         <table class="kv-table">
             <tr><th><i class="bi bi-signpost-2 me-1"></i>Branch</th><td>{{ $requisition->branch ?: 'NU Clark' }}</td></tr>
             <tr><th><i class="bi bi-building me-1"></i>Department</th><td>{{ $requisition->department->name ?? 'N/A' }}</td></tr>
-            <tr><th><i class="bi bi-wallet2 me-1"></i>Charge To</th><td>{{ $requisition->charge_to_budget_item ?: 'N/A' }}</td></tr>
             <tr><th><i class="bi bi-upc-scan me-1"></i>CSF No.</th><td>{{ $requisition->csf_no ?: 'N/A' }}</td></tr>
             <tr><th><i class="bi bi-person me-1"></i>Requested By</th><td>{{ $requisition->requested_by_name ?: ($requisition->user->name ?? 'N/A') }}</td></tr>
             <tr><th><i class="bi bi-calendar-event me-1"></i>Date Requested</th><td>{{ optional($requisition->requested_at)->format('Y-m-d H:i') ?: 'N/A' }}</td></tr>

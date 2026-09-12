@@ -47,7 +47,12 @@ class AccessVoucherController extends Controller
             'code_hint' => $prefix.'-****-'.substr($plain, -4),
             'voucher_type' => $data['voucher_type'],
             'approver_type' => $data['voucher_type'] === 'approver' ? $data['approver_type'] : null,
-            'department_id' => $data['department_id'] ?? null,
+            // Campus-wide approver roles are never department-bound, so a
+            // department chosen by mistake on the voucher form is dropped
+            // rather than carried into the new account at signup.
+            'department_id' => \App\Support\SignatoryResolver::isCampusWide($data['approver_type'] ?? null)
+                ? null
+                : ($data['department_id'] ?? null),
             'generated_by' => auth()->id(),
             'expires_at' => now()->addHours((int) $data['expires_in_hours']),
         ]);

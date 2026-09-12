@@ -9,7 +9,17 @@
             <h2>Charge Slip Request</h2>
             <p>Prepare the charge slip, add requested items, check the department OPEX balance, and route the request to the selected signatories.</p>
         </div>
-        <div class="premium-form-intro-badge"><i class="bi bi-arrow-right-circle"></i><span>Digital Routing</span></div>
+        <div class="premium-form-intro-aside">
+            <div class="premium-budget-card premium-budget-card-inline">
+                <div class="premium-budget-icon"><i class="bi bi-wallet2"></i></div>
+                <div class="premium-budget-copy">
+                    <span>Department OPEX Availability</span>
+                    <strong id="deptBudgetRemaining">₱0.00</strong>
+                    <small>Remaining from <span id="deptBudgetLimit">₱0.00</span> allocated budget</small>
+                </div>
+            </div>
+            <div class="premium-form-intro-badge"><i class="bi bi-arrow-right-circle"></i><span>Digital Routing</span></div>
+        </div>
     </div>
 
     <form method="POST" action="{{ route('requisitions.store') }}" id="chargeSlipForm" class="premium-form">
@@ -20,7 +30,7 @@
                 <div class="premium-step">01</div>
                 <div>
                     <h3>Request Information</h3>
-                    <p>Complete the charge slip reference, department, budget item, and request purpose.</p>
+                    <p>Complete the charge slip reference, department, and request purpose.</p>
                 </div>
             </div>
             <div class="premium-section-body">
@@ -52,24 +62,10 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-lg-6">
-                        <label class="form-label">Charge To (Per Budget Item)</label>
-                        <input type="text" name="charge_to_budget_item" class="form-control" value="{{ old('charge_to_budget_item') }}" placeholder="e.g. Office Supplies" required>
-                    </div>
-                    <div class="col-lg-6">
+                    <div class="col-12">
                         <label class="form-label">Purpose</label>
                         <input type="text" name="purpose" class="form-control" value="{{ old('purpose') }}" placeholder="e.g. Daily operation / enrollment" required>
                     </div>
-                </div>
-
-                <div class="premium-budget-card mt-4">
-                    <div class="premium-budget-icon"><i class="bi bi-wallet2"></i></div>
-                    <div class="premium-budget-copy">
-                        <span>Department OPEX Availability</span>
-                        <strong id="deptBudgetRemaining">₱0.00</strong>
-                        <small>Remaining from <span id="deptBudgetLimit">₱0.00</span> allocated budget</small>
-                    </div>
-                    <div class="premium-budget-status"><i class="bi bi-shield-check"></i> Budget Check</div>
                 </div>
             </div>
         </section>
@@ -154,7 +150,12 @@
                         <div class="premium-route-content">
                             <span class="premium-route-kicker">Requested By</span>
                             <strong>Requestor</strong>
-                            <input type="text" name="requested_by_name" class="form-control mt-3" value="{{ old('requested_by_name', auth()->user()->name) }}" required>
+                            <div class="premium-auto-assigned mt-3"><i class="bi bi-check-circle-fill"></i> From your account</div>
+                            <div class="premium-locked-field mt-2">
+                                <i class="bi bi-lock-fill"></i>
+                                <span>{{ auth()->user()->name }}</span>
+                            </div>
+                            <p>Taken from the account you are signed in with. To correct the spelling, ask the Super Admin to update your account name.</p>
                         </div>
                     </div>
 
@@ -180,15 +181,19 @@
                         <div class="premium-route-content">
                             <span class="premium-route-kicker">Approved By</span>
                             <strong>Executive Director</strong>
-                            <div class="mt-3">
-                                @include('partials.department-approver-tree', [
-                                    'inputName' => 'executive_approver_id',
-                                    'people' => $executiveApprovers,
-                                    'placeholder' => 'Select department, then Executive Director',
-                                    'treeId' => 'charge_slip_executive_tree',
-                                ])
-                            </div>
-                            <p>Open a department first. Only the selected Executive Director receives the final approval step.</p>
+                            <div class="premium-auto-assigned mt-3"><i class="bi bi-check-circle-fill"></i> Auto Assigned</div>
+                            @if($executiveDirector)
+                                <div class="premium-locked-field mt-2">
+                                    <i class="bi bi-person-badge-fill"></i>
+                                    <span>{{ $executiveDirector->name }}</span>
+                                </div>
+                                <p>Campus-wide role. The Executive Director is assigned by the system, so there is nothing to choose here.</p>
+                            @else
+                                <div class="premium-warning mt-2">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                    <div><strong>No Executive Director configured.</strong><span>Ask the Super Admin to assign one before submitting this charge slip.</span></div>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

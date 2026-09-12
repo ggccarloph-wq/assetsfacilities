@@ -45,7 +45,8 @@ class DatabaseSeeder extends Seeder
         );
         $executive = User::updateOrCreate(
             ['email' => 'exec@nuclark.local'],
-            ['department_id' => $acct->id, 'name' => 'Executive Director', 'password' => bcryptSecure('exec12345'), 'role' => 'approver', 'account_type' => 'approver', 'access_scope' => 'asset', 'approver_type' => 'executive', 'is_approved' => true, 'approved_at' => now(), 'email_verified_at' => now()]
+            // Campus-wide role: no department by design.
+            ['department_id' => null, 'name' => 'Executive Director', 'password' => bcryptSecure('exec12345'), 'role' => 'approver', 'account_type' => 'approver', 'access_scope' => 'asset', 'approver_type' => 'executive', 'is_approved' => true, 'approved_at' => now(), 'email_verified_at' => now()]
         );
         $requestor = User::updateOrCreate(
             ['email' => 'requestor@nuclark.local'],
@@ -61,7 +62,8 @@ class DatabaseSeeder extends Seeder
         );
         $academicDirector = User::updateOrCreate(
             ['email' => 'academicdirector@nuclark.local'],
-            ['department_id' => $acct->id, 'name' => 'Priscilla M. Evangelista', 'password' => bcryptSecure('acaddir123'), 'role' => 'approver', 'account_type' => 'approver', 'access_scope' => 'asset', 'approver_type' => 'academic_director', 'is_approved' => true, 'approved_at' => now(), 'email_verified_at' => now()]
+            // Campus-wide role: no department by design.
+            ['department_id' => null, 'name' => 'Priscilla M. Evangelista', 'password' => bcryptSecure('acaddir123'), 'role' => 'approver', 'account_type' => 'approver', 'access_scope' => 'asset', 'approver_type' => 'academic_director', 'is_approved' => true, 'approved_at' => now(), 'email_verified_at' => now()]
         );
 
         $electronics = ItemCategory::updateOrCreate(['name' => 'Electronics'], ['description' => 'Monitors, system units, peripherals']);
@@ -199,7 +201,6 @@ class DatabaseSeeder extends Seeder
             'user_id' => $requestor->id,
             'department_id' => $acct->id,
             'branch' => 'NU Clark',
-            'charge_to_budget_item' => 'Office Supplies',
             'csf_no' => 'CSF-001',
             'requested_by_name' => $requestor->name,
             'checked_by_name' => $dean->name,

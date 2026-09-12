@@ -92,15 +92,19 @@ class ActivityProposalController extends Controller
         $advisers = User::with('department')->where('role', 'approver')->where('approver_type', 'adviser')->where('is_approved', true)->get()->sortBy(fn ($u) => (($u->department->name ?? 'ZZZ') . '|' . $u->name));
         $deansPrincipals = User::with('department')->where('role', 'approver')->where('approver_type', 'dean')->where('is_approved', true)->get()->sortBy(fn ($u) => (($u->department->name ?? 'ZZZ') . '|' . $u->name));
         $sdaoOfficers = User::where('role', 'approver')->where('approver_type', 'sdao')->where('is_approved', true)->orderBy('name')->get();
-        $academicDirectors = User::with('department')->where('role', 'approver')->where('approver_type', 'academic_director')->where('is_approved', true)->get()->sortBy(fn ($u) => (($u->department->name ?? 'ZZZ') . '|' . $u->name));
-        $executiveDirectors = User::with('department')->where('role', 'approver')->where('approver_type', 'executive')->where('is_approved', true)->get()->sortBy(fn ($u) => (($u->department->name ?? 'ZZZ') . '|' . $u->name));
+
+        // Academic Director and Executive Director are campus-wide roles with no
+        // department, and there is exactly one of each, so the requestor is not
+        // asked to pick them -- the form only shows who will sign.
+        $academicDirector = \App\Support\SignatoryResolver::academicDirector();
+        $executiveDirector = \App\Support\SignatoryResolver::executiveDirector();
 
         // The "Other Items Needed and Services" checklist is now driven by the
         // facility_items table, which the FMO Super Admin maintains.
         $catalogItems = \App\Models\FacilityItem::active()->items()->ordered()->get();
         $catalogServices = \App\Models\FacilityItem::active()->services()->ordered()->get();
 
-        return view('activity_proposals.create', compact('facilities', 'advisers', 'deansPrincipals', 'sdaoOfficers', 'academicDirectors', 'executiveDirectors', 'catalogItems', 'catalogServices') + [
+        return view('activity_proposals.create', compact('facilities', 'advisers', 'deansPrincipals', 'sdaoOfficers', 'academicDirector', 'executiveDirector', 'catalogItems', 'catalogServices') + [
             'equipmentOptions' => self::EQUIPMENT_OPTIONS,
         ]);
     }
@@ -132,9 +136,29 @@ class ActivityProposalController extends Controller
             'adviser_id' => ['required', Rule::exists('users', 'id')->where(fn ($q) => $q->where('role', 'approver')->where('approver_type', 'adviser')->where('is_approved', true))],
             'department_approver_id' => ['required', Rule::exists('users', 'id')->where(fn ($q) => $q->where('role', 'approver')->where('approver_type', 'dean')->where('is_approved', true))],
             'sdao_id' => ['required', Rule::exists('users', 'id')->where(fn ($q) => $q->where('role', 'approver')->where('approver_type', 'sdao')->where('is_approved', true))],
-            'academic_director_id' => ['required', Rule::exists('users', 'id')->where(fn ($q) => $q->where('role', 'approver')->where('approver_type', 'academic_director')->where('is_approved', true))],
-            'executive_director_id' => ['required', Rule::exists('users', 'id')->where(fn ($q) => $q->where('role', 'approver')->where('approver_type', 'executive')->where('is_approved', true))],
         ]);
+
+        /*
+         | Campus-wide signatories are resolved on the server, never accepted
+         | from the submitted form. NU Clark has one Academic Director and one
+         | Executive Director, neither attached to a department, so there was
+         | nothing meaningful for the requestor to choose -- and accepting an id
+         | from the browser would have let a tampered form reroute the last two
+         | approval steps to another account.
+         */
+        $academicDirector = \App\Support\SignatoryResolver::academicDirector();
+        $executiveDirector = \App\Support\SignatoryResolver::executiveDirector();
+
+        foreach ([['academic_director', $academicDirector], ['executive', $executiveDirector]] as [$type, $signatory]) {
+            if (!$signatory) {
+                return back()->withInput()->withErrors([
+                    'facility_id' => \App\Support\SignatoryResolver::missingMessage($type),
+                ]);
+            }
+        }
+
+        $data['academic_director_id'] = $academicDirector->id;
+        $data['executive_director_id'] = $executiveDirector->id;
 
         // Program Flow may be typed, uploaded, or both. When a file is given,
         // its text is extracted into program_flow so every existing screen and

@@ -229,12 +229,19 @@
             <div class="premium-route-content">
               <span class="premium-route-kicker">Reviewed By</span>
               <strong>Academic Director</strong>
-              @include('partials.department-approver-tree', [
-                'inputName' => 'academic_director_id',
-                'people' => $academicDirectors,
-                'placeholder' => 'Select department, then Academic Director',
-                'treeId' => 'academic_director_tree',
-              ])
+              <div class="premium-auto-assigned"><i class="bi bi-check-circle-fill"></i> Auto Assigned</div>
+              @if($academicDirector)
+                <div class="premium-locked-field mt-2">
+                  <i class="bi bi-person-badge-fill"></i>
+                  <span>{{ $academicDirector->name }}</span>
+                </div>
+                <p>Campus-wide role, so there is nothing to choose. This step is routed by the system.</p>
+              @else
+                <div class="premium-warning mt-2">
+                  <i class="bi bi-exclamation-triangle"></i>
+                  <div><strong>No Academic Director configured.</strong><span>Ask the Super Admin to assign one before submitting.</span></div>
+                </div>
+              @endif
             </div>
           </div>
 
@@ -243,12 +250,19 @@
             <div class="premium-route-content">
               <span class="premium-route-kicker">Approved By</span>
               <strong>Executive Director</strong>
-              @include('partials.department-approver-tree', [
-                'inputName' => 'executive_director_id',
-                'people' => $executiveDirectors,
-                'placeholder' => 'Select department, then Executive Director',
-                'treeId' => 'executive_director_tree',
-              ])
+              <div class="premium-auto-assigned"><i class="bi bi-check-circle-fill"></i> Auto Assigned</div>
+              @if($executiveDirector)
+                <div class="premium-locked-field mt-2">
+                  <i class="bi bi-person-badge-fill"></i>
+                  <span>{{ $executiveDirector->name }}</span>
+                </div>
+                <p>Campus-wide role, so there is nothing to choose. This step is routed by the system.</p>
+              @else
+                <div class="premium-warning mt-2">
+                  <i class="bi bi-exclamation-triangle"></i>
+                  <div><strong>No Executive Director configured.</strong><span>Ask the Super Admin to assign one before submitting.</span></div>
+                </div>
+              @endif
             </div>
           </div>
         </div>

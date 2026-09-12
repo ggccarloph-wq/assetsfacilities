@@ -154,6 +154,7 @@
         .chart-head{height:42px;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid var(--line);font-weight:700;font-size:13px;background:var(--surface-2);color:var(--ink-900)}
         .chart-body{padding:18px;background:var(--surface)}
         .chart-wrap{height:280px;position:relative}
+        .chart-note{margin:0 0 12px;font-size:11px;color:var(--ink-400,#6C7A93);line-height:1.5}
         .data-panel{padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow-sm)}
         .report-accordion-toggle{cursor:pointer;user-select:none;align-items:center!important}
         .report-accordion-toggle .bi-chevron-down{font-size:16px;color:var(--ink-400);transition:transform .2s ease;flex-shrink:0}
@@ -517,6 +518,13 @@
         .premium-form-intro p{margin:6px 0 0;max-width:760px;color:#68758E;font-size:12.5px;line-height:1.55}
         .premium-form-intro-badge{position:relative;z-index:1;display:flex;align-items:center;gap:8px;white-space:nowrap;border:1px solid #D5E2F5;background:rgba(255,255,255,.8);border-radius:999px;padding:10px 14px;color:#315FAD;font-size:11px;font-weight:800;box-shadow:0 5px 16px rgba(38,82,151,.06)}
         .premium-form-intro-badge i{font-size:14px!important}
+        /* Right-hand cluster of the form header. The OPEX availability card
+           lives here instead of further down the form, so the requestor sees
+           what is left before typing a single item. */
+        .premium-form-intro-aside{position:relative;z-index:1;display:flex;align-items:center;gap:12px;margin-left:auto}
+        .premium-budget-card-inline{padding:11px 15px;border-radius:15px;background:rgba(255,255,255,.86);box-shadow:0 5px 16px rgba(38,82,151,.06)}
+        .premium-budget-card-inline .premium-budget-icon{width:38px;height:38px;min-width:38px;border-radius:12px}
+        .premium-budget-card-inline .premium-budget-copy>strong{font-size:18px}
 
         .premium-form{display:grid;gap:18px}
         .premium-section{overflow:visible;border:1px solid #DDE6F2;border-radius:20px;background:#fff;box-shadow:0 8px 26px rgba(29,55,99,.055);transition:box-shadow .18s ease,border-color .18s ease}
@@ -567,6 +575,11 @@
         .premium-route-content>p{margin:8px 0 0;color:#7E8B9F;font-size:10.5px;line-height:1.45}
         .premium-auto-assigned{display:inline-flex;align-items:center;gap:6px;border:1px solid #B9D9CA;background:#EDF8F2;color:#17704A;border-radius:999px;padding:7px 10px;font-size:10.5px;font-weight:800}
         .premium-auto-assigned i{font-size:11px!important}
+        /* Read-only signatory display. Used where the person is decided by the
+           system (signed-in account, or a campus-wide role) so there is no
+           control to interact with -- it must look settled, not disabled. */
+        .premium-locked-field{display:flex;align-items:center;gap:9px;min-height:46px;padding:10px 13px;border:1px solid #D5DFEE;border-radius:12px;background:#F4F7FC;color:#22385C;font-size:12.5px;font-weight:700}
+        .premium-locked-field i{font-size:13px!important;color:#6C86AD}
         .premium-route-card .approver-tree-trigger{min-height:44px;background:#fff}
 
         .premium-document-strip{display:flex;align-items:end;justify-content:space-between;gap:20px;padding:17px 18px;border:1px solid #E0E7F1;border-radius:16px;background:linear-gradient(145deg,#FBFDFF,#F4F8FD)}
@@ -627,7 +640,11 @@
         }
         @media (max-width:767px){
             .premium-form-page{padding-bottom:14px}
-            .premium-form-intro{align-items:flex-start;padding:20px;border-radius:18px}.premium-form-intro-icon{width:48px;height:48px;min-width:48px;border-radius:14px;font-size:20px}.premium-form-intro h2{font-size:19px}.premium-form-intro-badge{display:none}
+            .premium-form-intro{align-items:flex-start;padding:20px;border-radius:18px;flex-wrap:wrap}.premium-form-intro-icon{width:48px;height:48px;min-width:48px;border-radius:14px;font-size:20px}.premium-form-intro h2{font-size:19px}.premium-form-intro-badge{display:none}
+            /* Budget stays visible on small screens even though the routing
+               badge is dropped -- it is information, not decoration. */
+            .premium-form-intro-aside{margin-left:0;width:100%}
+            .premium-budget-card-inline{width:100%}
             .premium-section{border-radius:17px}.premium-section-head{padding:15px 16px;border-radius:17px 17px 0 0}.premium-section-body{padding:18px 16px}.premium-step{width:34px;height:34px;min-width:34px}
             .premium-routing-grid,.premium-routing-grid-three{grid-template-columns:1fr}
             .premium-upload-zone{grid-template-columns:auto 1fr}.premium-upload-zone input{grid-column:1/-1}

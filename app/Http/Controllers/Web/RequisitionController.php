@@ -74,7 +74,10 @@ class RequisitionController extends Controller
         ]);
 
         $deanApprovers = \App\Models\User::with('department')->where('role', 'approver')->where('approver_type', 'dean')->where('is_approved', true)->get()->sortBy(fn ($u) => (($u->department->name ?? 'ZZZ') . '|' . $u->name));
-        $executiveApprovers = \App\Models\User::with('department')->where('role', 'approver')->where('approver_type', 'executive')->where('is_approved', true)->get()->sortBy(fn ($u) => (($u->department->name ?? 'ZZZ') . '|' . $u->name));
+
+        // The Executive Director is campus-wide and holds no department, so the
+        // requestor no longer picks one -- the role itself decides the routing.
+        $executiveDirector = \App\Support\SignatoryResolver::executiveDirector();
 
         return view('requisitions.create', [
             'departments' => $departments,
@@ -82,7 +85,7 @@ class RequisitionController extends Controller
             'selectedItemId' => $request->integer('item_id') ?: null,
             'departmentBudgets' => $departmentBudgets,
             'deanApprovers' => $deanApprovers,
-            'executiveApprovers' => $executiveApprovers,
+            'executiveDirector' => $executiveDirector,
         ]);
     }
 
@@ -91,19 +94,38 @@ class RequisitionController extends Controller
         $data = $request->validate([
             'department_id' => ['required','exists:departments,id'],
             'branch' => ['required','string','max:255'],
-            'charge_to_budget_item' => ['required','string','max:255'],
             'csf_no' => ['nullable','string','max:255'],
             'purpose' => ['nullable','string'],
-            'requested_by_name' => ['required','string','max:255'],
             'checked_by_name' => ['nullable','string','max:255'],
             'approved_by_name' => ['nullable','string','max:255'],
             'dean_approver_id' => ['required', Rule::exists('users', 'id')->where(fn ($q) => $q->where('role', 'approver')->where('approver_type', 'dean')->where('is_approved', true))],
-            'executive_approver_id' => ['required', Rule::exists('users', 'id')->where(fn ($q) => $q->where('role', 'approver')->where('approver_type', 'executive')->where('is_approved', true))],
             'items' => ['required','array','min:1'],
             'items.*.item_id' => ['required','exists:items,id'],
             'items.*.quantity_requested' => ['required','integer','min:1'],
             'items.*.remarks' => ['nullable','string','max:255'],
         ]);
+
+        /*
+         | "Requested By" is the signed-in account, not a typed value. The field
+         | on the form is read-only for display; whatever arrives in the request
+         | body is ignored so the printed charge slip can never name someone
+         | other than the person who actually filed it.
+         */
+        $data['requested_by_name'] = Auth::user()->name;
+
+        /*
+         | The Executive Director is campus-wide (no department, exactly one
+         | holder), so the requestor does not choose one. Resolving it here --
+         | after validation, server side -- means a tampered form cannot reroute
+         | the final approval to a different account.
+         */
+        $executiveDirector = \App\Support\SignatoryResolver::executiveDirector();
+        if (!$executiveDirector) {
+            return back()->withInput()->withErrors([
+                'items' => \App\Support\SignatoryResolver::missingMessage('executive'),
+            ]);
+        }
+        $data['executive_approver_id'] = $executiveDirector->id;
 
         if (!Auth::user()->isAdmin() && (int) $data['department_id'] !== (int) Auth::user()->department_id) {
             return back()->withErrors(['department_id' => 'You can only request for your assigned department.'])->withInput();
@@ -151,7 +173,6 @@ class RequisitionController extends Controller
                     'user_id' => Auth::id(),
                     'department_id' => $data['department_id'],
                     'branch' => $data['branch'],
-                    'charge_to_budget_item' => $data['charge_to_budget_item'],
                     'csf_no' => $data['csf_no'] ?? null,
                     'requested_by_name' => $data['requested_by_name'],
                     'checked_by_name' => \App\Models\User::find($data['dean_approver_id'])?->name,

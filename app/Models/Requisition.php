@@ -7,7 +7,7 @@ class Requisition extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'requisition_no', 'user_id', 'department_id', 'branch', 'charge_to_budget_item', 'csf_no',
+        'requisition_no', 'user_id', 'department_id', 'branch', 'csf_no',
         'requested_by_name', 'checked_by_name', 'approved_by_name', 'status', 'purpose',
         'requested_at', 'approved_by', 'approved_at', 'asset_reviewed_by', 'asset_reviewed_at',
         'dean_approver_id', 'executive_approver_id', 'dean_approved_by', 'dean_approved_at', 'executive_approved_by', 'executive_approved_at',
