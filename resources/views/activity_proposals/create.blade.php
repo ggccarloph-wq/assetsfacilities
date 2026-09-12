@@ -78,7 +78,7 @@
         <div class="premium-step">02</div>
         <div>
           <h3>Schedule</h3>
-          <p>Choose the activity day or date range. The calendar dates update automatically; you only set the times.</p>
+          <p>Choose the activity day or date range.</p>
         </div>
       </div>
       <div class="premium-section-body">
